@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definitions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Pillar 2: Validation Blueprints
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'createdAt']) &&
+             data.keys().size() >= 2 && data.keys().size() <= 14 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.createdAt is timestamp &&
+             (data.get('displayName', '') is string && data.get('displayName', '').size() <= 256) &&
+             (data.get('photoURL', '') is string && data.get('photoURL', '').size() <= 1000) &&
+             (data.get('fullName', '') is string && data.get('fullName', '').size() <= 256) &&
+             (data.get('farmName', '') is string && data.get('farmName', '').size() <= 256) &&
+             (data.get('farmLocation', '') is string && data.get('farmLocation', '').size() <= 256) &&
+             (data.get('experienceLevel', '') is string && data.get('experienceLevel', '').size() <= 100) &&
+             (data.get('contactEmail', '') is string && data.get('contactEmail', '').size() <= 256) &&
+             (data.get('phone', '') is string && data.get('phone', '').size() <= 100) &&
+             (data.get('selectedAvatarId', '') is string && data.get('selectedAvatarId', '').size() <= 100) &&
+             (data.get('customAvatarBase64', null) == null || (data.get('customAvatarBase64', '') is string && data.get('customAvatarBase64', '').size() <= 1500000)) &&
+             (data.get('setupDate', '') is string && data.get('setupDate', '').size() <= 100);
+    }
+
+    function isValidFarmLog(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'temp', 'humidity', 'feedType', 'feedQty', 'larvaeCondition', 'hatchCount', 'trayCount']) &&
+             data.keys().size() >= 9 && data.keys().size() <= 14 &&
+             data.userId == userId &&
+             data.date is timestamp &&
+             data.temp is number &&
+             data.humidity is number &&
+             data.feedQty is number &&
+             data.hatchCount is number &&
+             data.trayCount is number &&
+             data.feedType is string && data.feedType.size() <= 100 &&
+             data.larvaeCondition is string && data.larvaeCondition.size() <= 100 &&
+             (data.get('notes', '') is string && data.get('notes', '').size() <= 1000) &&
+             (data.get('totalEggs', 0) is number) &&
+             (data.get('hatchingRate', 0) is number) &&
+             (data.get('eggWeight', 0.0) is number) &&
+             (data.get('larvaeWeight', 0.0) is number);
+    }
+
+    function isValidScanResult(data) {
+      return data.keys().hasAll(['healthStatus', 'confidence', 'diagnosis', 'action', 'createdAt']) &&
+             data.healthStatus in ['Healthy', 'Warning', 'Critical'] &&
+             data.confidence is number &&
+             data.diagnosis is string &&
+             data.action is string &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidAlert(data) {
+      return data.keys().hasAll(['type', 'title', 'message', 'status', 'createdAt']) &&
+             data.type in ['critical', 'warning', 'info', 'success'] &&
+             data.status in ['active', 'dismissed'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidSettings(data) {
+      return data.get('tempThresholdHigh', 33) is number &&
+             data.get('humThresholdHigh', 85) is number;
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['role', 'text', 'createdAt']) &&
+             data.role in ['user', 'ai'] &&
+             data.text is string &&
+             data.createdAt is timestamp;
+    }
+
+    // Phase 4: Match Blocks
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && isValidUser(incoming()) &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().diff(existing()).affectedKeys().hasOnly([
+                      'displayName', 'photoURL', 'email', 'fullName', 
+                      'farmName', 'farmLocation', 'experienceLevel', 
+                      'contactEmail', 'phone', 'selectedAvatarId', 
+                      'customAvatarBase64', 'setupDate'
+                    ]);
+      
+      match /farmlogs/{logId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidFarmLog(incoming(), userId) && incoming().date == request.time;
+        allow delete: if isOwner(userId);
+        allow update: if isOwner(userId) && isValidFarmLog(incoming(), userId) &&
+                      incoming().date == existing().date;
+      }
+
+      match /scans/{scanId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidScanResult(incoming()) && incoming().createdAt == request.time;
+        allow delete: if isOwner(userId);
+      }
+
+      match /alerts/{alertId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidAlert(incoming()) && incoming().createdAt == request.time;
+        allow update: if isOwner(userId) && isValidAlert(incoming()) && incoming().createdAt == existing().createdAt;
+        allow delete: if isOwner(userId);
+      }
+
+      match /settings/current {
+        allow get: if isOwner(userId);
+        allow write: if isOwner(userId) && isValidSettings(incoming());
+      }
+
+      match /chats/{chatId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidChatMessage(incoming()) && incoming().createdAt == request.time;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

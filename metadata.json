@@ -1,0 +1,6 @@
+{
+  "name": "FlyMind AI",
+  "description": "High-performance environmental tracker and crop diagnostics bio-scanner for Black Soldier Fly (BSF) breeding facilities.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

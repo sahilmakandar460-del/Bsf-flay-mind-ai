@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "fullName": { "type": "string" },
+        "farmName": { "type": "string" },
+        "farmLocation": { "type": "string" },
+        "experienceLevel": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "phone": { "type": "string" },
+        "selectedAvatarId": { "type": "string" },
+        "customAvatarBase64": { "type": "string" },
+        "setupDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "fullName"]
+    },
+    "farmlog": {
+      "title": "Smart Farm Log",
+      "description": "Daily metrics for BSF farming",
+      "type": "object",
+      "properties": {
+        "temp": { "type": "number" },
+        "humidity": { "type": "number" },
+        "feedType": { "type": "string" },
+        "feedQty": { "type": "number" },
+        "larvaeCondition": { "type": "string" },
+        "hatchCount": { "type": "number" },
+        "totalEggs": { "type": "number" },
+        "hatchingRate": { "type": "number" },
+        "eggWeight": { "type": "number" },
+        "larvaeWeight": { "type": "number" },
+        "trayCount": { "type": "number" },
+        "notes": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["temp", "humidity", "feedType", "feedQty", "larvaeCondition", "hatchCount", "trayCount", "userId", "date"]
+    },
+    "scan_result": {
+      "title": "Scan Result",
+      "description": "AI image analysis results",
+      "type": "object",
+      "properties": {
+        "healthStatus": { "type": "string" },
+        "confidence": { "type": "number" },
+        "diagnosis": { "type": "string" },
+        "action": { "type": "string" },
+        "detections": { "type": "array", "items": { "type": "string" } },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["healthStatus", "confidence", "diagnosis", "action", "createdAt"]
+    },
+    "alert": {
+      "title": "Alert",
+      "description": "System or AI generated alerts",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "title", "message", "status", "createdAt"]
+    },
+    "farm_settings": {
+      "title": "Farm Settings",
+      "description": "User specific farm configuration",
+      "type": "object",
+      "properties": {
+        "tempThresholdHigh": { "type": "number" },
+        "tempThresholdLow": { "type": "number" },
+        "humThresholdHigh": { "type": "number" },
+        "humThresholdLow": { "type": "number" },
+        "facilityName": { "type": "string" }
+      }
+    },
+    "chat_message": {
+      "title": "Chat Message",
+      "description": "AI chatbot conversation history",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string" },
+        "text": { "type": "string" },
+        "image": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["role", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "user",
+      "description": "User profiles"
+    },
+    "users/{userId}/farmlogs/{logId}": {
+      "schema": "farmlog",
+      "description": "BSF farming daily metrics"
+    },
+    "users/{userId}/scans/{scanId}": {
+      "schema": "scan_result",
+      "description": "AI scan history"
+    },
+    "users/{userId}/alerts/{alertId}": {
+      "schema": "alert",
+      "description": "Notification history"
+    },
+    "users/{userId}/settings/current": {
+      "schema": "farm_settings",
+      "description": "Farm configuration"
+    },
+    "users/{userId}/chats/{chatId}": {
+      "schema": "chat_message",
+      "description": "AI chat history"
+    }
+  }
+}
