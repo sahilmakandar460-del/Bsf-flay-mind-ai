@@ -34,8 +34,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { playAlertSound, AlertSoundType } from '../lib/audioAlerts';
-import { auth, db } from '../lib/firebase';
-import { signOut, deleteUser } from 'firebase/auth';
+import { auth, db, signOut, deleteUser } from '../lib/firebase';
 import { doc, deleteDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';

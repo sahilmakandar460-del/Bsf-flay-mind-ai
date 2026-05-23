@@ -41,9 +41,8 @@ import {
   AlertTriangle,
   ChevronRight
 } from 'lucide-react';
-import { db, auth, storage } from '../lib/firebase';
+import { db, auth, storage, signOut } from '../lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { playAlertSound } from '../lib/audioAlerts';
@@ -1051,6 +1050,15 @@ export default function ProfileComponent({ onNavigate }: ProfileProps) {
                       ? 'क्लाउड सिंक के माध्यम से आपके समग्र जैव-आंकड़े सीधे सर्वर से संरेखित होते हैं।'
                       : 'Enables continuous replication of environmental histories, scanner logs, and operation statistics to the master Firestore repository.'}
                   </p>
+
+                  <div className="p-3.5 rounded-xl bg-neon-green/5 border border-neon-green/15 text-neon-green text-[10px] font-mono flex items-center gap-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-ping shrink-0" />
+                    <span>
+                      {lang === 'hi' 
+                        ? '🚀 ऑफलाइन-फ़र्स्ट गेस्ट मोड सक्रीय है! बिना पासवर्ड सीधे सुरक्षित कृषि संचालन चालू।' 
+                        : '🚀 INSTANT OFFLINE-FIRST ACTIVE: Direct farm operations enabled with future-ready cloud sync support.'}
+                    </span>
+                  </div>
 
                   {/* Real-time Status Indicator Block */}
                   <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-2 font-mono">

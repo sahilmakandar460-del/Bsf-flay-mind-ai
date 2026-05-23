@@ -11,9 +11,7 @@ import Alerts from './components/Alerts';
 import Settings from './components/Settings';
 import Profile from './components/Profile';
 import VoiceAssistant from './components/VoiceAssistant';
-import Auth from './components/Auth';
-import { auth, db } from './lib/firebase';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth, db, onAuthStateChanged, signOut, User } from './lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { playAlertSound, AlertSoundType } from './lib/audioAlerts';
 import { 
@@ -598,13 +596,7 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-dark-bg text-white overflow-hidden">
-        <Auth onSuccess={() => setActiveTab('home')} />
-      </div>
-    );
-  }
+
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-dark-bg text-white overflow-hidden relative border-x border-white/5">
